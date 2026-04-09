@@ -1,0 +1,25 @@
+{
+  "tests": [
+    {
+      "name": "List circuits",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create circuit",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Test Circuit",
+        "description": "Test description",
+        "components": []
+      },
+      "expectedStatus": 201,
+      "expectedBody": {"name": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

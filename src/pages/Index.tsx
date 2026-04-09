@@ -4,6 +4,8 @@ import ComponentLibrary, { COMPONENTS } from "@/components/ComponentLibrary";
 import CircuitCanvas from "@/components/CircuitCanvas";
 import MeasurementPanel from "@/components/MeasurementPanel";
 import InfoPanel from "@/components/InfoPanel";
+import SaveLoadDialog from "@/components/SaveLoadDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface PlacedComponent {
   id: string;
@@ -18,11 +20,14 @@ interface PlacedComponent {
 type RightPanel = "measurements" | "info";
 
 const Index = () => {
+  const { toast } = useToast();
   const [selectedLibComponent, setSelectedLibComponent] = useState<string | null>(null);
   const [placedComponents, setPlacedComponents] = useState<PlacedComponent[]>([]);
   const [selectedPlaced, setSelectedPlaced] = useState<string | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
   const [rightPanel, setRightPanel] = useState<RightPanel>("measurements");
+  const [dialogMode, setDialogMode] = useState<"save" | "load" | null>(null);
+  const [projectName, setProjectName] = useState("");
 
   const handleDropComponent = useCallback(
     (x: number, y: number) => {
@@ -128,14 +133,14 @@ const Index = () => {
           </div>
 
           <button
-            onClick={() => {}}
+            onClick={() => setDialogMode("save")}
             className="flex items-center gap-1 px-2.5 py-1 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-all"
           >
             <Icon name="Save" size={11} />
             Сохранить
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => setDialogMode("load")}
             className="flex items-center gap-1 px-2.5 py-1 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-all"
           >
             <Icon name="FolderOpen" size={11} />
@@ -227,6 +232,7 @@ const Index = () => {
           <span>ZOOM: 100%</span>
         </div>
         <div className="ml-auto flex items-center gap-4">
+          {projectName && <span className="text-foreground/50">{projectName}</span>}
           <span>CircuitLab v1.0</span>
           <span className="flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-primary/60" />
@@ -234,6 +240,30 @@ const Index = () => {
           </span>
         </div>
       </footer>
+
+      {dialogMode && (
+        <SaveLoadDialog
+          mode={dialogMode}
+          currentName={projectName}
+          currentComponents={placedComponents}
+          onClose={() => setDialogMode(null)}
+          onSaved={(project) => {
+            setProjectName(project.name);
+            setDialogMode(null);
+            toast({ title: "Сохранено", description: `Проект «${project.name}» сохранён` });
+          }}
+          onLoad={(project) => {
+            if (project.components) {
+              setPlacedComponents(project.components as PlacedComponent[]);
+            }
+            setProjectName(project.name);
+            setSelectedPlaced(null);
+            setIsSimulating(false);
+            setDialogMode(null);
+            toast({ title: "Загружено", description: `Проект «${project.name}» загружен` });
+          }}
+        />
+      )}
     </div>
   );
 };
